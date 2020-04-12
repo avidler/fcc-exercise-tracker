@@ -1,3 +1,5 @@
+'user strict';
+
 const express = require('express')
 
 const cors = require('cors')
@@ -5,7 +7,6 @@ const mongoose = require('mongoose')
 const path = require('path')
 
 let User = require('./models/username.model')
-let Exercise = require('./models/exercise.model')
 
 require('dotenv').config()
 
@@ -38,21 +39,11 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/api', (req, res) => {
-  console.log("Found")
-  res.json("Got this one - and this...")
-});
-
-
 app.get('/api/exercise/users', (req, res) => {
-  console.log("finding users...")
-  console.log("User: ", User)
   User.find()
-  .then(users => {
-    console.log(users)
-    res.json(users)}
-    )
+  .then((result) => res.json(result))
   .catch(err => res.status(400).json('Error: ' + err))
+
 });
 
 
@@ -67,16 +58,23 @@ console.log(newUser)
   
 });
 
-app.post('/api/exercise/add', (req, res) => {
+app.post('/api/exercise/add', (req, res, done) => {
   let userId = req.body.userId
   let description = req.body.description
   let duration = req.body.duration
   if (req.body.date) {var date = req.body.date} else {var date = new Date()}
-  console.log("values: ",userId, description, duration, date)
-  const newExercise = new Exercise({userId, description, duration, date})
-  console.log("newExercise: ",newExercise)
-  newExercise.save()
-  .then(() => res.json('Exercise added!'))
+ 
+  const exercise = ({description, duration, date})
+  
+  User.findByIdAndUpdate(
+    {_id:userId},
+    {$push: {exercise}},
+    {safe: true, new: true, upsert: true}
+    )
+
+  .then((result) => {
+    console.log(result)
+    res.json(result) })
   .catch(err => res.status(400).json('Error: ' + err))
 })
 
@@ -85,14 +83,15 @@ app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
   let fromDate = req.query.from ? new Date(req.query.from) : 0
   let toDate = req.query.to ? new Date(req.query.to) : new Date()
   let limit = req.query.limit ? parseInt(req.query.limit) : 0
-  Exercise.find(
-    {userId,
-      "date": {$gte: fromDate},
-      "date": {$lte: toDate},
-    }
-    ).limit(limit)
-  .then((result) => res.json(result) )
-  .catch(err => res.status(400).json('Error: ' + err))
+
+  User.findOne({_id:userId})
+  .then((user) => {
+    let results = user.exercise
+    results = results.filter((item) => item.date > fromDate && item.date < toDate)
+    if (limit > 0) {results = results.slice(0, limit)}
+    res.json(results)
+  })
+   
   
 })
 
