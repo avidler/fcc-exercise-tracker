@@ -96,15 +96,16 @@ app.post('/api/exercise/add', (req, res) => {
 
 app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
   let userId = req.params.id
-  let fromDate = req.query.from ? new Date(req.query.from) : 0
-  let toDate = req.query.to ? new Date(req.query.to) : new Date()
+  let fromDate = new Date(req.query.from)
+  let toDate = new Date(req.query.to)
   let limit = req.query.limit ? parseInt(req.query.limit) : 0
   
   User.findOne({_id:userId})
   .then((user) => {
     let username = user.username
     let results = user.exercise
-    results = results.filter((item) => item.date > fromDate && item.date < toDate)
+    if (fromDate) {results.filter((item) => item.date > fromDate)}
+    if (toDate) {results.filter((item) => item.date < toDate)}
     if (limit > 0) {results = results.slice(0, limit)}
     console.log("results.length: ", results.length)
     res.json({
