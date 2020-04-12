@@ -116,10 +116,10 @@ app.get('/api/exercise/log/', (req, res) => {
   .then((user) => {
     let username = user.username
     let log = user.exercise
-    if (fromDate) {results.filter((item) => item.date >= fromDate)}
-    if (toDate) {results.filter((item) => item.date <= toDate)}
-    if (limit > 0) {results = results.slice(0, +limit)}
-    console.log("results.length: ", results.length)
+    if (fromDate) {log.filter((item) => item.date >= fromDate)}
+    if (toDate) {log.filter((item) => item.date <= toDate)}
+    if (limit > 0) {log = log.slice(0, +limit)}
+    console.log("log.length: ", log.length)
     res.json({
       _id: userId, 
       username,
