@@ -64,11 +64,16 @@ app.post('/api/exercise/add', (req, res) => {
   let duration = req.body.duration
   if (req.body.date) {var date = new Date(req.body.date)} else {var date = new Date()}
  
-  const exercise = ({description, duration, date})
+  const newExercise = {
+    _id: userId,
+    description,
+    duration: +duration,
+    date: date.toString()
+  }
   
   User.findByIdAndUpdate(
     {_id:userId},
-    {$push: {exercise}},
+    {$push: {newExercise}},
     {safe: true, new: true, upsert: true}
     )
 
@@ -77,12 +82,7 @@ app.post('/api/exercise/add', (req, res) => {
      })
   .catch(err => res.status(400).json('Error: ' + err))
 
-  const newExercise = {
-    _id: userId,
-    description,
-    duration: +duration,
-    date: date.toString()
-  }
+  
   
    
   res.json(newExercise);
