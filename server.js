@@ -68,7 +68,7 @@ app.post('/api/exercise/add', (req, res) => {
     _id: userId,
     description,
     duration: +duration,
-    date: date.toString()
+    date: date.toDateString()
   }
   
   User.findByIdAndUpdate(
