@@ -81,13 +81,7 @@ app.post('/api/exercise/add', (req, res) => {
     console.log(result)
      })
   .catch(err => res.status(400).json('Error: ' + err))
-
-  
-  
-   
   res.json(newExercise);
-
-
 
 })
 
@@ -104,9 +98,9 @@ app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
   .then((user) => {
     let username = user.username
     let results = user.exercise
-    if (fromDate) {results.filter((item) => item.date > fromDate)}
-    if (toDate) {results.filter((item) => item.date < toDate)}
-    if (limit > 0) {results = results.slice(0, limit)}
+    if (fromDate) {results.filter((item) => item.date >= fromDate)}
+    if (toDate) {results.filter((item) => item.date <= toDate)}
+    if (limit > 0) {results = results.slice(0, +limit)}
     console.log("results.length: ", results.length)
     res.json({
       _id: userId, 
