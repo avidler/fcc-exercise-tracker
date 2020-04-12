@@ -74,9 +74,25 @@ app.post('/api/exercise/add', (req, res) => {
 
   .then((result) => {
     console.log(result)
-    res.json(result) })
+     })
   .catch(err => res.status(400).json('Error: ' + err))
+
+  const newExercise = {
+    _id: userId,
+    description,
+    duration: +duration,
+    date: date.toString()
+  }
+  
+   
+  res.json(newExercise);
+
+
+
 })
+
+
+
 
 app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
   let userId = req.params.id
