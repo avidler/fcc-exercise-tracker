@@ -14,6 +14,7 @@ const app = express()
 const port = process.env.PORT || 5000
 
 const bodyParser = require('body-parser')
+const shortid = require('shortid')
 var router = express.Router();
 
 const uri = process.env.ATLAS_URI
@@ -48,12 +49,11 @@ app.get('/api/exercise/users', (req, res) => {
 
 
 app.post('/api/exercise/new-user', (req, res) => {
-  let username = req.body.username
- console.log(username)
+  const username = req.body.username
+  
   const newUser = new User({username})
-console.log(newUser)
   newUser.save()
-  .then(() => res.json(newUser))
+  .then(() => res.json(newUser._id, newUser.username))
   .catch(err => res.status(400).json('Error: ' + err))
   
 });
@@ -64,32 +64,50 @@ app.post('/api/exercise/add', (req, res) => {
   let duration = req.body.duration
   if (req.body.date) {var date = new Date(req.body.date)} else {var date = new Date()}
  
-  const newExercise = {
-    _id: userId,
-    description,
-    duration: +duration,
-    date: date.toDateString()
-  }
-  
-  User.findByIdAndUpdate(
-    {_id:userId},
-    {$push: {newExercise}},
-    {safe: true, new: true, upsert: true}
-    )
+  User.findOne({_id:userId}, function(err, data) {
 
-  .then((result) => {
-    console.log(result)
-     })
-  .catch(err => res.status(400).json('Error: ' + err))
-  res.json(newExercise);
+    if (data) {
+      const newExercise = {
+        username: data.username,
+        description,
+        duration: +duration,
+        _id: userId,    
+        date: date.toDateString()
+
+      
+      }
+    
+      console.log(newExercise)
+
+      const newExerciseDetails = {
+        description,
+        duration: +duration,
+        date: date.toDateString()
+      }
+      
+      User.findByIdAndUpdate(
+        {_id:userId},
+        {$push: {newExerciseDetails}},
+        {safe: true, new: true, upsert: true}
+        )
+    
+      res.json(newExercise);
+    }
+
+  })
+
+  
+ 
+
+  
 
 })
 
 
 
 
-app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
-  let userId = req.params.id
+app.get('/api/exercise/log/', (req, res) => {
+  let userId = req.query.userId
   let fromDate = new Date(req.query.from)
   let toDate = new Date(req.query.to)
   let limit = req.query.limit ? parseInt(req.query.limit) : 0
@@ -97,7 +115,7 @@ app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
   User.findOne({_id:userId})
   .then((user) => {
     let username = user.username
-    let results = user.exercise
+    let log = user.exercise
     if (fromDate) {results.filter((item) => item.date >= fromDate)}
     if (toDate) {results.filter((item) => item.date <= toDate)}
     if (limit > 0) {results = results.slice(0, +limit)}
@@ -105,8 +123,8 @@ app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
     res.json({
       _id: userId, 
       username,
-      count: results.length,
-      results
+      count: log.length,
+      log
     })
   })
    

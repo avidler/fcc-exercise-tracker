@@ -9,7 +9,9 @@ const usernameSchema = new Schema({
         date: {type: Date}
     }]
 
-},{ collection: 'Users'})
+    },
+    { versionKey: false },
+    { collection: 'Users'})
 
 const User = mongoose.model('User', usernameSchema)
 
