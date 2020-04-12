@@ -89,7 +89,8 @@ app.get('/api/exercise/log/:id/:from?/:to?/:limit?', (req, res) => {
     let results = user.exercise
     results = results.filter((item) => item.date > fromDate && item.date < toDate)
     if (limit > 0) {results = results.slice(0, limit)}
-    res.json(results)
+    console.log("results.length: ", results.length)
+    res.json({results, count: results.length})
   })
    
   
