@@ -58,11 +58,11 @@ console.log(newUser)
   
 });
 
-app.post('/api/exercise/add', (req, res, done) => {
+app.post('/api/exercise/add', (req, res) => {
   let userId = req.body.userId
   let description = req.body.description
   let duration = req.body.duration
-  if (req.body.date) {var date = req.body.date} else {var date = new Date()}
+  if (req.body.date) {var date = new Date(req.body.date)} else {var date = new Date()}
  
   const exercise = ({description, duration, date})
   
