@@ -63,12 +63,13 @@ app.post('/api/exercise/add', (req, res) => {
   let description = req.body.description
   let duration = req.body.duration
   if (req.body.date) {var date = new Date(req.body.date)} else {var date = new Date()}
- 
-  User.findOne({_id:userId}, function(err, data) {
-
-    if (data) {
+  console.log(userId)
+  User.findOne({_id:userId})
+  .then((user) => {
+    console.log("userdata: ", user)
+    if (user) {
       const newExercise = {
-        username: data.username,
+        username: user.username,
         description,
         duration: +duration,
         _id: userId,    
@@ -77,20 +78,22 @@ app.post('/api/exercise/add', (req, res) => {
       
       }
     
-      console.log(newExercise)
-
       const newExerciseDetails = {
         description,
         duration: +duration,
         date: date.toDateString()
       }
-      
-      User.findByIdAndUpdate(
-        {_id:userId},
-        {$push: {newExerciseDetails}},
+      console.log("user exercise before update: ",user.exercise)
+      user.updateOne(
+       
+        {$push: {exercise: {
+          description:newExerciseDetails.description, 
+          duration:newExerciseDetails.duration,
+          date: newExerciseDetails.date
+        }}},
         {safe: true, new: true, upsert: true}
         )
-    
+        .then(result => console.log(result))
       res.json(newExercise);
     }
 
@@ -114,8 +117,16 @@ app.get('/api/exercise/log/', (req, res) => {
   
   User.findOne({_id:userId})
   .then((user) => {
+    
     let username = user.username
     let log = user.exercise
+    console.log(log)
+    log = log.map(exercise => ({
+      description: exercise.description,
+      duration: exercise.duration,
+      date: exercise.date.toDateString()
+    })
+    )
     if (fromDate) {log.filter((item) => item.date >= fromDate)}
     if (toDate) {log.filter((item) => item.date <= toDate)}
     if (limit > 0) {log = log.slice(0, +limit)}
